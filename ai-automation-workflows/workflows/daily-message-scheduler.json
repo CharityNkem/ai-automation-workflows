@@ -1,0 +1,201 @@
+{
+  "name": "PI's Daily Confessions",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            },
+            {
+              "triggerAtHour": 12
+            },
+            {
+              "triggerAtHour": 19
+            },
+            {
+              "triggerAtHour": 18,
+              "triggerAtMinute": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b2e0b4ce-1b73-4945-9852-51f987d1a917",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItems = $input.all();\n\nlet sheetRows = [];\nif (inputItems.length === 1 && Array.isArray(inputItems[0].json.rows)) {\n  sheetRows = inputItems[0].json.rows;\n} else {\n  sheetRows = inputItems.map(i => i.json);\n}\n\nfunction pad(n){ return n < 10 ? '0' + n : '' + n; }\n\n// Force Europe/London timezone (handles GMT & BST automatically)\nconst now = new Date();\nconst londonDateStr = now.toLocaleString('en-US', { timeZone: 'Europe/London' });\nconst londonDate = new Date(londonDateStr);\n\nconst hours = pad(londonDate.getHours());\nconst minutes = pad(londonDate.getMinutes());\nconst currentHHMM = `${hours}:${minutes}`;\n\nconst dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\nconst currentDayName = dayNames[londonDate.getDay()];\n\nfunction normalizeTime(t) {\n  if (t === null || t === undefined) return null;\n  if (typeof t === 'object' && t instanceof Date) {\n    return `${pad(t.getHours())}:${pad(t.getMinutes())}`;\n  }\n  const s = String(t).trim();\n  const m = s.match(/(\\d{1,2}):(\\d{2})/);\n  if (!m) return s;\n  return `${pad(Number(m[1]))}:${m[2]}`;\n}\n\nconst matched = sheetRows.filter(r => {\n  const day = (r.Day || r.day || '').toString().trim();\n  const sendTimeRaw = r.SendTime || r.sendTime || r['SendTime'] || r['sendtime'];\n  const sendTime = normalizeTime(sendTimeRaw);\n  return day.toLowerCase() === currentDayName.toLowerCase() && sendTime === currentHHMM;\n});\n\nif (matched.length === 0) {\n  return [{ json: { matched: false, message: `No confession for ${currentDayName} at ${currentHHMM}` } }];\n}\n\nconst out = matched.map(row => {\n  const title = row.Title || row.title || '';\n  const scriptures = row.Scriptures || row.scriptures || '';\n  const confession = row.Confession || row.confession || '';\n  const email = row.Email || row.email || null;\n  const type = row.Type || row.type || null;\n  const body = `${title}\\n\\n${confession}\\n\\nScripture: ${scriptures}`;\n  return {\n    json: {\n      matched: true,\n      day: currentDayName,\n      sendTime: currentHHMM,\n      title,\n      scriptures,\n      confession,\n      body,\n      email,\n      type,\n      rawRow: row\n    }\n  };\n});\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "46a47365-d633-43eb-81b8-cf73f6f452d9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0ef83518-9c78-4942-aef1-191be392c4fa",
+              "leftValue": "={{ $json.matched }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "29439ab9-8c94-486e-90e9-38b8162b17b3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "DAILY CONFESSION",
+        "message": "=<p>Dear Ma\u2019am,</p>\n\n<p>Here are your {{ $json.type }} Confessions.</p>\n<p><strong>Day:</strong> {{ $json.day }} </p>\n<p><strong>Title:</strong> {{ $json.title }} </p>\n<p><strong>Scriptures:</strong><br> {{ $json.scriptures.replace(/\\n/g, '<br>') }}</p>\n<p><strong>Confession:</strong><br> {{ $json.confession.replace(/\\n/g, '<br>') }}</p>\n\n<br>\n<p>Warm regards,</p>\n<p><strong>[Your Company]</strong></p>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        -48
+      ],
+      "id": "ca471364-b12b-4517-8404-c50c35e6281e",
+      "name": "Send a message",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "PI's Daily Confessions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0c75ea32-4b6e-488a-add5-3e1e26710c69",
+      "name": "Get row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "08b710a3-0714-41b5-8b83-9b09c0e1a40d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "id": "WORKFLOW_ID",
+  "tags": []
+}

@@ -1,0 +1,730 @@
+{
+  "name": "Hope365",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "[Your Organization] Reporting Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1200920301,
+          "mode": "list",
+          "cachedResultName": "Emails",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1200920301"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        -208
+      ],
+      "id": "482d0efa-d9e9-459f-a6dd-2d37df2b1183",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Emails",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -208
+      ],
+      "id": "eacbd08f-4595-4b68-b41d-43e89bfc07a1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                4
+              ],
+              "triggerAtHour": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        -208
+      ],
+      "id": "6c2ff110-7eaf-4a63-900e-42f7d8b67327",
+      "name": "Thursday Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                5
+              ],
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        112
+      ],
+      "id": "d47713ad-96e7-46a2-91eb-e13eaba1c1a8",
+      "name": "Friday Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "[Your Organization] Reporting Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 752213457,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=752213457"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        112
+      ],
+      "id": "200902aa-fc9f-495d-8779-5f75c9979283",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "919eda24-c703-427d-accf-701ab0141488",
+              "name": "windowEnd",
+              "value": "={{$now}}",
+              "type": "string"
+            },
+            {
+              "id": "3be62e26-c47e-48e7-9430-47bf681c6ed8",
+              "name": "windowStart",
+              "value": "={{$now.minus({days: 7})}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        112
+      ],
+      "id": "91786219-2770-422c-9f53-168240882c85",
+      "name": "Windows"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Emails }}",
+        "subject": "Weekly Report Reminder \u2013 Due Friday 4:00 PM",
+        "message": "=<p>Hello Team,</p>\n\n<p>This is a reminder to complete and upload your weekly report.</p>\n\n<p>\nPlease upload your report to your department folder:<br>\n<a href=\"{{$json['Drive Link']}}\">\n{{$json['Drive Link']}}\n</a>\n</p>\n\n<p>\nAfter uploading, submit the report link using this form:<br>\n<a href=\"{{$json['Reporting form link']}}\">\n{{$json['Reporting form link']}}\n</a>\n</p>\n\n<p><strong>Deadline:</strong> Friday, 4:00 PM.</p>\n\n<p>\nThank you.<br>\nBest regards,<br>\nManagement,<br>\n[Your Organization]\n</p>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -208
+      ],
+      "id": "93fb36a6-04ea-4091-b362-11bb342bb57f",
+      "name": "Thursday reminder emails",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mgt@example.com",
+        "subject": "Teams Weekly Report",
+        "message": "={{$node[\"Generate Management Summary\"].json[\"html\"]}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "d4bee937-41ed-4ac8-be2c-d12b4490d0d1",
+      "name": "Friday Management Emails",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.bodyText }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        224
+      ],
+      "id": "63b386c7-ec5f-4021-b2b9-b90dd34a4d1e",
+      "name": "Followup mail for missing reports",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Expected roles + who to notify if missing =====\nconst EXPECTED_DEPARTMENTS = [\n  \"Executive Assistant\",\n  \"Graphics designer & Video Editor\",\n  \"Creative Developer and Ministry Coordinator\",\n  \"Creative Intern\",\n];\n\nconst DEPT_EMAIL = {\n  \"Executive Assistant\": \"growth@example.com\",\n  \"Graphics designer & Video Editor\": \"media@example.com\",\n  \"Creative Developer and Ministry Coordinator\": \"hello@example.com\",\n  \"Creative Intern\": \"media@example.com\",\n};\n\n// ===== Detect column keys from the sheet output =====\nconst keys = Object.keys(items[0]?.json || {});\nconst TS_COL = keys.find(k => k.toLowerCase().includes(\"timestamp\")) || \"Timestamp\";\nconst DEPT_COL = keys.find(k => k.toLowerCase().includes(\"department\")) || \"Department/Role\";\nconst LINK_COL = keys.find(k => k.toLowerCase().includes(\"link to weekly\")) || \"Link to weekly Report\";\nconst SUBMITTED_COL = keys.find(k => k.toLowerCase().includes(\"submitted\")) || \"Submitted By;\";\nconst MONTH_COL = keys.find(k => k.toLowerCase() === \"month\") || \"Month\";\nconst WEEK_COL = keys.find(k => k.toLowerCase() === \"week\") || \"Week\";\n\n// ===== Window: last 2 days from execution time =====\nconst windowEnd = new Date($now);\nconst windowStart = new Date(windowEnd.getTime() - (2 * 24 * 60 * 60 * 1000));\n\n// ===== Helpers =====\nconst fmtWAT = (d) => d.toLocaleString('en-GB', { timeZone: 'Africa/Lagos' });\nconst norm = (s) => String(s || \"\").trim().toLowerCase();\n\nfunction parseTimestamp(s) {\n  if (!s) return null;\n  const str = String(s).trim();\n  const [datePart, timePartRaw] = str.split(\" \");\n  if (!datePart) return null;\n\n  const dParts = datePart.split(\"/\");\n  if (dParts.length !== 3) return null;\n\n  // Sheet timestamps confirmed as MM/DD/YYYY\n  const m = Number(dParts[0]);\n  const d = Number(dParts[1]);\n  const y = Number(dParts[2]);\n\n  const timePart = timePartRaw || \"00:00:00\";\n  const tParts = timePart.split(\":\");\n  const hh = Number(tParts[0] || 0);\n  const mm = Number(tParts[1] || 0);\n  const ss = Number(tParts[2] || 0);\n\n  // \u2705 FIX: Build an ISO string with explicit WAT offset (+01:00)\n  // so Date.parse() treats it as WAT, not local/UTC ambiguously\n  const pad = (n) => String(n).padStart(2, \"0\");\n  const isoString = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:${pad(ss)}+01:00`;\n  const dt = new Date(isoString);\n\n  if (Number.isNaN(dt.getTime())) return null;\n  return dt;\n}\n\n// ===== Step 1: inspect + filter by time window =====\nconst inspected = items.map(i => {\n  const rawTs = i.json[TS_COL];\n  const parsed = parseTimestamp(rawTs);\n  return {\n    ...i.json,\n    __parsedMs: parsed ? parsed.getTime() : null,\n  };\n});\n\nconst filtered = inspected\n  .filter(r => r.__parsedMs && r.__parsedMs > windowStart.getTime() && r.__parsedMs <= windowEnd.getTime())\n  .sort((a, b) => a.__parsedMs - b.__parsedMs);\n\n// ===== Step 2: use ALL filtered rows for management summary =====\nlet html = `\n<p>Hello Management,</p>\n\n<p>\nBelow is the summary of weekly reports submitted between\n<strong>${fmtWAT(windowStart)}</strong> and\n<strong>${fmtWAT(windowEnd)}</strong> (WAT).\n</p>\n\n<p><strong>Total submissions:</strong> ${filtered.length}</p>\n\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr>\n  <th>Month</th>\n  <th>Week</th>\n  <th>Timestamp</th>\n  <th>Department/Role</th>\n  <th>Submitted By</th>\n  <th>Report Link</th>\n</tr>\n`;\n\nfor (const r of filtered) {\n  const link = (r[LINK_COL] || \"\").trim();\n  const isUrl = /^https?:\\/\\//i.test(link);\n  const linkCell = link\n    ? (isUrl ? `<a href=\"${link}\">Open report</a>` : link)\n    : \"\";\n\n  html += `<tr>\n    <td>${r[MONTH_COL] || \"\"}</td>\n    <td>${r[WEEK_COL] || \"\"}</td>\n    <td>${r[TS_COL] || \"\"}</td>\n    <td>${r[DEPT_COL] || \"\"}</td>\n    <td>${r[SUBMITTED_COL] || \"\"}</td>\n    <td>${linkCell}</td>\n  </tr>`;\n}\n\n// ===== Step 3: after management summary, determine missing roles =====\nconst submittedRoles = filtered.map(r => r[DEPT_COL] || \"\");\nconst submittedRoleSet = new Set(submittedRoles.map(norm).filter(Boolean));\n\nconst missingRolesPretty = EXPECTED_DEPARTMENTS.filter(\n  role => !submittedRoleSet.has(norm(role))\n);\n\nhtml += `</table>\n\n<p><strong>Missing roles:</strong> ${missingRolesPretty.length ? missingRolesPretty.join(\", \") : \"None\"}</p>\n\n<p>Best regards,<br><strong>[Your Organization]</strong></p>`;\n\n// ===== Step 4: output items =====\nconst outputItems = [];\n\n// Management item\noutputItems.push({\n  json: {\n    type: \"management\",\n    html,\n    count: filtered.length,\n    missingCount: missingRolesPretty.length,\n    debug_windowStart: windowStart.toISOString(),\n    debug_windowEnd: windowEnd.toISOString(),\n    debug_all_rows_seen: inspected.map(r => ({\n      original: r[TS_COL],\n      parsedISO: r.__parsedMs ? new Date(r.__parsedMs).toISOString() : null,\n      role: r[DEPT_COL]\n    })),\n    debug_filtered_rows: filtered.map(r => ({\n      original: r[TS_COL],\n      parsedISO: r.__parsedMs ? new Date(r.__parsedMs).toISOString() : null,\n      role: r[DEPT_COL]\n    })),\n    debug_filteredRoles: submittedRoles,\n    debug_missingRoles: missingRolesPretty,\n  }\n});\n\n// Follow-up items for missing roles only\nfor (const roleName of missingRolesPretty) {\n  const to = DEPT_EMAIL[roleName] || \"\";\n  outputItems.push({\n    json: {\n      type: \"followup\",\n      role: roleName,\n      to,\n      subject: `Weekly Report Not Seen \u2013 ${roleName}`,\n      bodyText: `<p>Hello ${roleName},</p>\n\n<p>\nYour weekly report was not seen in the reporting submissions for this week\n(<strong>deadline: Friday 4:00 PM WAT</strong>).\n</p>\n\n<p>\nPlease reply to this email with the link to your weekly report.\n</p>\n\n<p>\nThank you.\n</p>\n\n<p>\n<strong>Management,<br>\n[Your Organization]</strong>\n</p>`\n    }\n  });\n}\n\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        112
+      ],
+      "id": "7f66b4ae-6699-439f-833a-54102a9be294",
+      "name": "Generate Management Summary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a18fe2f3-467d-4191-8b2e-268c8c6eb7ad",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "followup",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        240
+      ],
+      "id": "ac9622a4-a88c-4f79-ace6-da7ae298e567",
+      "name": "Check Missing Reports"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2d2e099c-9c32-4eb2-ba5c-e3c77127d090",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "management",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        16
+      ],
+      "id": "61488997-2fa0-4eb8-a0ee-1a5cec076160",
+      "name": "Check for Reports submitted"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "[Your Organization] Reporting Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 752213457,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=752213457"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -192,
+        704
+      ],
+      "id": "11abb85a-91cb-4041-ba6e-4312dcbf377d",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "919eda24-c703-427d-accf-701ab0141488",
+              "name": "windowEnd",
+              "value": "={{$now}}",
+              "type": "string"
+            },
+            {
+              "id": "3be62e26-c47e-48e7-9430-47bf681c6ed8",
+              "name": "windowStart",
+              "value": "={{$now.minus({days: 7})}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        704
+      ],
+      "id": "82debd4f-8576-4905-9b21-9c687ecefe8f",
+      "name": "Windows1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Expected roles + who to notify if missing =====\nconst EXPECTED_DEPARTMENTS = [\n  \"Executive Assistant\",\n  \"Graphics designer & Video Editor\",\n  \"Creative Developer and Ministry Coordinator\",\n  \"Creative Intern\",\n];\n\nconst DEPT_EMAIL = {\n  \"Executive Assistant\": \"growth@example.com\",\n  \"Graphics designer & Video Editor\": \"media@example.com\",\n  \"Creative Developer and Ministry Coordinator\": \"hello@example.com\",\n  \"Creative Intern\": \"media@example.com\",\n};\n\n// ===== Detect column keys from the sheet output =====\nconst keys = Object.keys(items[0]?.json || {});\nconst TS_COL = keys.find(k => k.toLowerCase().includes(\"timestamp\")) || \"Timestamp\";\nconst DEPT_COL = keys.find(k => k.toLowerCase().includes(\"department\")) || \"Department/Role\";\nconst LINK_COL = keys.find(k => k.toLowerCase().includes(\"link to weekly\")) || \"Link to weekly Report\";\nconst SUBMITTED_COL = keys.find(k => k.toLowerCase().includes(\"submitted\")) || \"Submitted By;\";\nconst MONTH_COL = keys.find(k => k.toLowerCase() === \"month\") || \"Month\";\nconst WEEK_COL = keys.find(k => k.toLowerCase() === \"week\") || \"Week\";\n\n// ===== Window: last 2 days from execution time =====\nconst windowEnd = new Date($now);\nconst windowStart = new Date(windowEnd.getTime() - (3 * 24 * 60 * 60 * 1000));\n\n// ===== Helpers =====\nconst fmtWAT = (d) => d.toLocaleString('en-GB', { timeZone: 'Africa/Lagos' });\nconst norm = (s) => String(s || \"\").trim().toLowerCase();\n\nfunction parseTimestamp(s) {\n  if (!s) return null;\n  const str = String(s).trim();\n  const [datePart, timePartRaw] = str.split(\" \");\n  if (!datePart) return null;\n\n  const dParts = datePart.split(\"/\");\n  if (dParts.length !== 3) return null;\n\n  // Sheet timestamps confirmed as MM/DD/YYYY\n  const m = Number(dParts[0]);\n  const d = Number(dParts[1]);\n  const y = Number(dParts[2]);\n\n  const timePart = timePartRaw || \"00:00:00\";\n  const tParts = timePart.split(\":\");\n  const hh = Number(tParts[0] || 0);\n  const mm = Number(tParts[1] || 0);\n  const ss = Number(tParts[2] || 0);\n\n  // \u2705 FIX: Build an ISO string with explicit WAT offset (+01:00)\n  // so Date.parse() treats it as WAT, not local/UTC ambiguously\n  const pad = (n) => String(n).padStart(2, \"0\");\n  const isoString = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:${pad(ss)}+01:00`;\n  const dt = new Date(isoString);\n\n  if (Number.isNaN(dt.getTime())) return null;\n  return dt;\n}\n\n// ===== Step 1: inspect + filter by time window =====\nconst inspected = items.map(i => {\n  const rawTs = i.json[TS_COL];\n  const parsed = parseTimestamp(rawTs);\n  return {\n    ...i.json,\n    __parsedMs: parsed ? parsed.getTime() : null,\n  };\n});\n\nconst filtered = inspected\n  .filter(r => r.__parsedMs && r.__parsedMs > windowStart.getTime() && r.__parsedMs <= windowEnd.getTime())\n  .sort((a, b) => a.__parsedMs - b.__parsedMs);\n\n// ===== Step 2: use ALL filtered rows for management summary =====\nlet html = `\n<p>Hello Management,</p>\n\n<p>\nBelow is the summary of weekly reports submitted between\n<strong>${fmtWAT(windowStart)}</strong> and\n<strong>${fmtWAT(windowEnd)}</strong> (WAT).\n</p>\n\n<p><strong>Total submissions:</strong> ${filtered.length}</p>\n\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr>\n  <th>Month</th>\n  <th>Week</th>\n  <th>Timestamp</th>\n  <th>Department/Role</th>\n  <th>Submitted By</th>\n  <th>Report Link</th>\n</tr>\n`;\n\nfor (const r of filtered) {\n  const link = (r[LINK_COL] || \"\").trim();\n  const isUrl = /^https?:\\/\\//i.test(link);\n  const linkCell = link\n    ? (isUrl ? `<a href=\"${link}\">Open report</a>` : link)\n    : \"\";\n\n  html += `<tr>\n    <td>${r[MONTH_COL] || \"\"}</td>\n    <td>${r[WEEK_COL] || \"\"}</td>\n    <td>${r[TS_COL] || \"\"}</td>\n    <td>${r[DEPT_COL] || \"\"}</td>\n    <td>${r[SUBMITTED_COL] || \"\"}</td>\n    <td>${linkCell}</td>\n  </tr>`;\n}\n\n// ===== Step 3: after management summary, determine missing roles =====\nconst submittedRoles = filtered.map(r => r[DEPT_COL] || \"\");\nconst submittedRoleSet = new Set(submittedRoles.map(norm).filter(Boolean));\n\nconst missingRolesPretty = EXPECTED_DEPARTMENTS.filter(\n  role => !submittedRoleSet.has(norm(role))\n);\n\nhtml += `</table>\n\n<p><strong>Missing roles:</strong> ${missingRolesPretty.length ? missingRolesPretty.join(\", \") : \"None\"}</p>\n\n<p>Best regards,<br><strong>[Your Organization]</strong></p>`;\n\n// ===== Step 4: output items =====\nconst outputItems = [];\n\n// Management item\noutputItems.push({\n  json: {\n    type: \"management\",\n    html,\n    count: filtered.length,\n    missingCount: missingRolesPretty.length,\n    debug_windowStart: windowStart.toISOString(),\n    debug_windowEnd: windowEnd.toISOString(),\n    debug_all_rows_seen: inspected.map(r => ({\n      original: r[TS_COL],\n      parsedISO: r.__parsedMs ? new Date(r.__parsedMs).toISOString() : null,\n      role: r[DEPT_COL]\n    })),\n    debug_filtered_rows: filtered.map(r => ({\n      original: r[TS_COL],\n      parsedISO: r.__parsedMs ? new Date(r.__parsedMs).toISOString() : null,\n      role: r[DEPT_COL]\n    })),\n    debug_filteredRoles: submittedRoles,\n    debug_missingRoles: missingRolesPretty,\n  }\n});\n\n// Follow-up items for missing roles only\nfor (const roleName of missingRolesPretty) {\n  const to = DEPT_EMAIL[roleName] || \"\";\n  outputItems.push({\n    json: {\n      type: \"followup\",\n      role: roleName,\n      to,\n      subject: `Reminder to Submit Weekly Report \u2013 ${roleName}`,\n      bodyText: `<p>Hello ${roleName},</p>\n\n<p>\nYour weekly report was not seen in the reporting submissions for this week\n(<strong>deadline: Friday 4:00 PM WAT</strong>).\n</p>\n\n<p>\nPlease reply to this email with the link to your weekly report.\n</p>\n\n<p>\nThank you.\n</p>\n\n<p>\n<strong>Management,<br>\n[Your Organization]</strong>\n</p>`\n    }\n  });\n}\n\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        704
+      ],
+      "id": "2b1e2bb5-c6c2-4087-938c-7582bfc54f85",
+      "name": "Generate Management Summary1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a18fe2f3-467d-4191-8b2e-268c8c6eb7ad",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "followup",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        832
+      ],
+      "id": "3bb9d8e4-fa8c-47c5-ac29-b21db6ad7a5e",
+      "name": "Check Missing Reports1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2d2e099c-9c32-4eb2-ba5c-e3c77127d090",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "management",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        608
+      ],
+      "id": "fe1aee90-c517-496e-947e-31abb939c6d3",
+      "name": "Check for Reports submitted1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                6
+              ],
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        704
+      ],
+      "id": "3958b7dc-a5d8-4062-808b-f919560df3b9",
+      "name": "Saturday Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "mgt@example.com",
+        "subject": "Teams Weekly Report",
+        "message": "={{$node[\"Generate Management Summary1\"].json[\"html\"]}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        592
+      ],
+      "id": "0a4fdd51-71d1-4362-9750-f85787b4b42f",
+      "name": "Saturday Management Emails",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.bodyText }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        816
+      ],
+      "id": "28c35dc1-bf4f-4bc5-bca6-31c68e273b8f",
+      "name": "Saturday Followup mail for missing reports",
+      "webhookId": "REPLACE_ON_IMPORT",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Thursday reminder emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thursday Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Friday Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Windows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Windows": {
+      "main": [
+        [
+          {
+            "node": "Generate Management Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thursday reminder emails": {
+      "main": [
+        []
+      ]
+    },
+    "Generate Management Summary": {
+      "main": [
+        [
+          {
+            "node": "Check for Reports submitted",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Missing Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Reports": {
+      "main": [
+        [
+          {
+            "node": "Followup mail for missing reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Reports submitted": {
+      "main": [
+        [
+          {
+            "node": "Friday Management Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Windows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Windows1": {
+      "main": [
+        [
+          {
+            "node": "Generate Management Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Management Summary1": {
+      "main": [
+        [
+          {
+            "node": "Check for Reports submitted1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Missing Reports1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Reports1": {
+      "main": [
+        [
+          {
+            "node": "Saturday Followup mail for missing reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Reports submitted1": {
+      "main": [
+        [
+          {
+            "node": "Saturday Management Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saturday Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Lagos",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "862fc5b4-d0f9-424d-9ca3-717446ca0928",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "id": "WORKFLOW_ID",
+  "tags": []
+}
